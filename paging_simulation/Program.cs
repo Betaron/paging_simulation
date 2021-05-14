@@ -24,8 +24,8 @@ namespace paging_simulation
 			}
 
 			Directory.CreateDirectory(RAM.path);
-			RAM.LoadNewApp(Page.CutIntoPages(app1, 8), appTable1);
-			RAM.LoadNewApp(Page.CutIntoPages(app2, 8), appTable2);
+			RAM.LoadNewApp(Page.CutIntoPages(app1, VirtualMemory.pageSize), appTable1);
+			RAM.LoadNewApp(Page.CutIntoPages(app2, VirtualMemory.pageSize), appTable2);
 		}
 	}
 }

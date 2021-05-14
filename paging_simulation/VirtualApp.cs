@@ -9,7 +9,6 @@ namespace paging_simulation
 	public class VirtualApp
 	{
 		public int size { private set; get; }
-		public int maxOffset;
 
 		public VirtualApp(int size)
 		{
@@ -27,6 +26,15 @@ namespace paging_simulation
 			}
 
 			return appComposition;
+		}
+
+		public void MemoryRequest(int tableNum)
+		{
+			int fullAddress = new Random().Next(size);
+			int pageNum = fullAddress >> (int)Math.Log2(VirtualMemory.pageSize);
+			int offset = fullAddress & ((1 << (int)Math.Log2(VirtualMemory.pageSize)) - 1);
+
+			byte data = VirtualMemory.GetByteFromMemory(tableNum, pageNum, tableNum);
 		}
 	}
 }

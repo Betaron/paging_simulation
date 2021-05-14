@@ -17,8 +17,6 @@ namespace paging_simulation
 
 			int pagesCount = app.size >= pageSize ? (int)Math.Ceiling((double)app.size / pageSize) : 1;
 
-			app.maxOffset = ((pagesCount - 1) << (int)Math.Log2(pageSize)) + app.size - pageSize * (pagesCount - 1);
-
 			byte[] appComposition = VirtualApp.CreateRandomAppComposition(app.size);
 
 			for (int i = 0; i < pagesCount; i++)
