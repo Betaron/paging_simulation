@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.IO;
 
 namespace paging_simulation
@@ -7,17 +8,17 @@ namespace paging_simulation
 	{
 		static void Main(string[] args)
 		{
-			VirtualApp app1 = new VirtualApp(15);
+			VirtualApp app1 = new(50);
+			List<PageTableEntry> appTable = new();
 
 			for (int i = 0; i < 10; i++)
 			{
 				RAM.freeAddresses.Enqueue(i);
 			}
-			
-			Page.CutIntoPages(app1, 10);
 
-			//Directory.CreateDirectory(RAM.path);
-			//File.WriteAllBytes(Path.Combine(RAM.path, "app1.app"), app1.appComposition);
+			Directory.CreateDirectory(RAM.path);
+			RAM.LoadNewApp(Page.CutIntoPages(app1, 8), appTable, 0);
+
 		}
 	}
 }

@@ -9,18 +9,24 @@ namespace paging_simulation
 	public class VirtualApp
 	{
 		public int size { private set; get; }
-		public byte[] appComposition;
+		public int maxOffset;
 
 		public VirtualApp(int size)
 		{
 			this.size = size;
-			appComposition = new byte[size];
+		}
 
-			Random rand = new Random();
+		public static byte[] CreateRandomAppComposition(int size)
+		{
+			byte[] appComposition = new byte[size];
+			Random rand = new();
+
 			for (int i = 0; i < size; i++)
 			{
 				appComposition[i] = Convert.ToByte(rand.Next(0, 255));
 			}
+
+			return appComposition;
 		}
 	}
 }
