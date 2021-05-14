@@ -12,9 +12,8 @@ namespace paging_simulation
 		public static Queue<int> freeAddresses = new();
 		public static readonly string path = @"D:\RAM";
 
-		public static void LoadNewApp(List<Page> pages, List<PageTableEntry> table, int tableNum)
+		public static void LoadNewApp(List<Page> pages, List<PageTableEntry> table)
 		{
-			string tablePath = Directory.CreateDirectory(Path.Combine(path, tableNum.ToString())).FullName;
 			for (int i = 0; i < pages.Count; i++)
 			{
 				while (freeAddresses.Count == 0)
@@ -22,7 +21,7 @@ namespace paging_simulation
 
 				int address = freeAddresses.Dequeue();
 
-				File.WriteAllBytes(Path.Combine(tablePath, address.ToString()), pages[i].pageComposition);
+				File.WriteAllBytes(Path.Combine(path, address.ToString()), pages[i].pageComposition);
 				
 				table.Add(new()
 				{

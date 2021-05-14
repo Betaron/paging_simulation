@@ -17,7 +17,7 @@ namespace paging_simulation
 			}
 
 			Directory.CreateDirectory(RAM.path);
-			RAM.LoadNewApp(Page.CutIntoPages(app1, 8), appTable, 0);
+			RAM.LoadNewApp(Page.CutIntoPages(app1, 8), appTable);
 
 		}
 	}
