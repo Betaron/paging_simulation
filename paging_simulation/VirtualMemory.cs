@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 
 namespace paging_simulation
 {
-	public struct PageTableEntry
+	public class PageTableEntry
 	{
 		public int virtualAddress;
 		public int physicalAddress;
@@ -17,8 +17,8 @@ namespace paging_simulation
 
 	public static class VirtualMemory
 	{
-		public static List<(VirtualApp app, List<PageTableEntry> entries)> pagesTables = new();
-
+		public static List<(VirtualApp app, List<PageTableEntry> entries)?> pagesTables = new();
+		public static object interrupt = new();
 		public static Queue<int> freeAddresses = new();
 		public static readonly string path = @"D:\PageMemSimulation\ExternalStorage";
 		public static Page[] virtualPages;
@@ -32,22 +32,24 @@ namespace paging_simulation
 
 			for (int i = 0; i < pagesTables.Count; i++)
 			{
-				for (int j = 0; j < pagesTables[i].entries.Count; j++)
+				if (pagesTables[i] == null)
+					continue;
+				for (int j = 0; j < pagesTables[i].Value.entries.Count; j++)
 				{
-					var item = pagesTables[i].entries[j];
-					if (item.physicalAddress == physicalPageName)
+					if (pagesTables[i].Value.entries[j].physicalAddress == physicalPageName)
 					{
 						string tablePath = Directory.CreateDirectory(Path.Combine(path, i.ToString())).FullName;
-						virtualPagePath = Path.Combine(tablePath, item.virtualAddress.ToString());
+						virtualPagePath = Path.Combine(tablePath, pagesTables[i].Value.entries[j].virtualAddress.ToString());
 
 						if (File.Exists(RAM_PagePath))
 							File.Move(RAM_PagePath, virtualPagePath, true);
 
 						RAM.freeAddresses.Enqueue(physicalPageName);
 
-						item.physicalAddress = -1;
-						item.presence = false;
-						item.reffering = false;
+						pagesTables[i].Value.entries[j].physicalAddress = -1;
+						pagesTables[i].Value.entries[j].presence = false;
+						pagesTables[i].Value.entries[j].reffering = false;
+
 
 						i = pagesTables.Count;
 						break;
@@ -65,13 +67,13 @@ namespace paging_simulation
 			string RAM_PagePath = Path.Combine(RAM.path, physicalAddress.ToString());
 			string virtualPagePath = Path.Combine(path, tableNum.ToString(), virtualPageNum.ToString());
 
-			for (int i = 0; i < pagesTables[i].entries.Count; i++)
+			for (int i = 0; i < pagesTables[tableNum].Value.entries.Count; i++)
 			{
-				var item = pagesTables[tableNum].entries[i];
+				var item = pagesTables[tableNum].Value.entries[i];
 				if (item.virtualAddress == virtualPageNum)
 				{
 					if (File.Exists(virtualPagePath))
-						File.Move(virtualPagePath, RAM_PagePath,true);
+						File.Move(virtualPagePath, RAM_PagePath, true);
 
 					item.physicalAddress = physicalAddress;
 					item.presence = true;
@@ -84,20 +86,45 @@ namespace paging_simulation
 			}
 		}
 
+		public static void CloseApp(int tableNum)
+		{
+			var table = pagesTables[tableNum].Value.entries;
+
+			foreach (var item in table)
+			{
+				string RAM_FilePath = Path.Combine(RAM.path, item.physicalAddress.ToString());
+				if (File.Exists(RAM_FilePath))
+				{
+					File.Delete(RAM_FilePath);
+					RAM.freeAddresses.Enqueue(item.physicalAddress);
+				}
+			}
+			string tablePath = Path.Combine(path, tableNum.ToString());
+			if (Directory.Exists(tablePath))
+				Directory.Delete(tablePath, true);
+
+			pagesTables[tableNum] = null;
+		}
+
 		public static byte GetByteFromMemory(int tableNum, int pageNum, int offset)
 		{
-			PageTableEntry entry = pagesTables[tableNum].entries[pageNum];
+			byte val;
 
-			if (!entry.presence)
+			lock (interrupt)
+			{
+
+			if (!pagesTables[tableNum].Value.entries[pageNum].presence)
 				LoadPageIntoRAM(tableNum, pageNum);
 
-			byte val;
-			using (FileStream stream = new FileStream(Path.Combine(RAM.path, entry.physicalAddress.ToString()), FileMode.Open))
+			using (FileStream stream = new FileStream(Path.Combine(
+				RAM.path, pagesTables[tableNum].Value.entries[pageNum].physicalAddress.ToString()), 
+				FileMode.Open))
 			{
 				stream.Seek(offset, SeekOrigin.Begin);
 				val = (byte)stream.ReadByte();
 			}
-			entry.reffering = false;
+			pagesTables[tableNum].Value.entries[pageNum].reffering = false;
+			}
 			return val;
 		}
 	}

@@ -1,0 +1,7 @@
+
+'/help' - Show avalible commands.
+'/exit' - 'ShoutDown execution of simulation.'
+'/createApp [app size]' - Create virtual app with specified size.
+'/closeApp [app index]' - Close virtual app by index.
+'/pauseApp [app index]' - Pause memory exchange.
+'/resumeApp [app index]' - Start memory exchange.

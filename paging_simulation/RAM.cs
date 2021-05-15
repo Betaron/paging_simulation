@@ -15,24 +15,28 @@ namespace paging_simulation
 
 		public static void LoadNewApp(List<Page> pages, List<PageTableEntry> table)
 		{
+			Directory.CreateDirectory(RAM.path);
 			for (int i = 0; i < pages.Count; i++)
 			{
-				while (freeAddresses.Count == 0)
-					VirtualMemory.UnloadPageFromRAM(substitutionQueue.Dequeue());
-
-				int address = freeAddresses.Dequeue();
-
-				File.WriteAllBytes(Path.Combine(path, address.ToString()), pages[i].pageComposition);
-
-				substitutionQueue.Enqueue(address);
-
-				table.Add(new()
+				lock (VirtualMemory.interrupt)
 				{
-					virtualAddress = i,
-					physicalAddress = address,
-					presence = true,
-					reffering = true
-				});
+					while (freeAddresses.Count == 0)
+						VirtualMemory.UnloadPageFromRAM(substitutionQueue.Dequeue());
+
+					int address = freeAddresses.Dequeue();
+
+					File.WriteAllBytes(Path.Combine(path, address.ToString()), pages[i].pageComposition);
+
+					substitutionQueue.Enqueue(address);
+
+					table.Add(new()
+					{
+						virtualAddress = i,
+						physicalAddress = address,
+						presence = true,
+						reffering = true
+					});
+				}
 			}
 		}
 	}
